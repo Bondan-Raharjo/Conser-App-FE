@@ -16,11 +16,11 @@ const NotFound = () => (
   </Box>
 );
 
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const isAuthenticated = () => {
-    return localStorage.getItem("token") !== null;
-  };
+const isAuthenticated = () => {
+  return localStorage.getItem("token") !== null;
+};
 
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   if (!isAuthenticated()) {
     return <Navigate to="/login" replace />;
   }
@@ -42,10 +42,11 @@ const LoadingFallback = () => (
 const AppLayout = () => {
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
-  
+  const userLoggedIn = isAuthenticated();
+
   return (
     <Box sx={{ display: 'flex' }}>
-      {!isLoginPage && <Navbar />}
+      {userLoggedIn && !isLoginPage && <Navbar />}
       <Box 
         component="main" 
         sx={{ 

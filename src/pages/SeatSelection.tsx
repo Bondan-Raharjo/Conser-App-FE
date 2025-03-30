@@ -37,7 +37,7 @@ const initialSeats = Array(6)
 
 const SeatSelection: React.FC = () => {
   const [seats, setSeats] = useState(initialSeats);
-  const [selectedSeats, setSelectedSeats] = useState<{ row: number; col: number; type: string }[]>(
+  const [selectedSeats, setSelectedSeats] = useState<{ row: number; col: number; type: keyof typeof SEAT_PRICES }[]>(
     loadSeatsFromLocalStorage()
   );
   const [openModal, setOpenModal] = useState(false);
@@ -89,7 +89,7 @@ const SeatSelection: React.FC = () => {
     if (isSelected) {
       setSelectedSeats((prev) => prev.filter((seat) => seat.row !== row || seat.col !== col));
     } else {
-      setSelectedSeats((prev) => [...prev, { row, col, type: seats[row][col].type }]);
+      setSelectedSeats((prev) => [...prev, { row, col, type: seats[row][col].type as "regular" | "vip" }]);
     }
   };
 
@@ -104,7 +104,7 @@ const SeatSelection: React.FC = () => {
     alert("Kursi berhasil dipesan!");
   };
 
-  const totalPrice = selectedSeats.reduce((sum, seat) => sum + SEAT_PRICES[seat.type], 0);
+  const totalPrice = selectedSeats.reduce((sum, seat) => sum + SEAT_PRICES[seat.type as keyof typeof SEAT_PRICES], 0);
 
   const formatCountdown = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);

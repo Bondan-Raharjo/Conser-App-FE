@@ -29,7 +29,7 @@ const initialSeats = Array(6)
   .map((_, rowIndex) =>
     Array(10)
       .fill(0)
-      .map((_, colIndex) => ({
+      .map((_) => ({
         status: 0,
         type: rowIndex < 2 ? "vip" : "regular",
       }))

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from "react";
+import React, { JSX, lazy, Suspense } from "react";
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Box, CircularProgress } from "@mui/material";
 import Navbar from "./components/Navbar";

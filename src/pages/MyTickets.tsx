@@ -1,9 +1,17 @@
 import React from "react";
 import { Grid, Card, CardContent, Typography, Box } from "@mui/material";
 
-const myTickets = [];
+interface Ticket {
+  id: string;
+  concertName: string;
+  date: string;
+  quantity: number;
+  status: "Active" | "Inactive";
+}
 
-const TicketCard = ({ ticket }) => (
+const myTickets: Ticket[] = [];
+
+const TicketCard: React.FC<{ ticket: Ticket }> = ({ ticket }) => (
   <Card className="shadow-md hover:shadow-lg transition-shadow duration-300">
     <CardContent>
       <Typography variant="h6" className="font-semibold mb-2">
@@ -28,7 +36,6 @@ const TicketCard = ({ ticket }) => (
 );
 
 const MyTickets: React.FC = () => {
-  const activeTickets = myTickets.filter(ticket => ticket.status === "Active");
   const hasTickets = myTickets.length > 0;
 
   return (

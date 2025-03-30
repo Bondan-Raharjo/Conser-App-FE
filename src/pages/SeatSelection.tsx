@@ -152,7 +152,7 @@ const SeatSelection: React.FC = () => {
             const seatTypeLabel = seat.type === "vip" ? "VIP" : "Reguler";
 
             return (
-              <Grid item key={`${rowIndex}-${colIndex}`} xs={1}>
+              <Grid  key={`${rowIndex}-${colIndex}`}>
                 <Tooltip title={`${seatTypeLabel} - ${seatLabel}`} arrow>
                   <Button
                     variant="contained"

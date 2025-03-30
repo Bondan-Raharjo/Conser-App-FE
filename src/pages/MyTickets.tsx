@@ -51,7 +51,7 @@ const MyTickets: React.FC = () => {
       ) : (
         <Grid container spacing={3} justifyContent="center">
           {myTickets.map((ticket) => (
-            <Grid item xs={12} sm={6} md={4} key={ticket.id}>
+            <Grid key={ticket.id}>
               <TicketCard ticket={ticket} />
             </Grid>
           ))}

@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Container, Typography, Grid, Button, Box, Tooltip, Modal, Paper } from "@mui/material";
+import { useParams } from "react-router-dom";
+import image1 from "../assets/images/image1.png";
+import image2 from "../assets/images/image2.png";
+import image3 from "../assets/images/image3.png";
 
 const SEAT_PRICES = {
   regular: 50000,
@@ -12,30 +16,43 @@ const STATUS = {
   booked: "gray",
 };
 
-const concertId = "concert_123"; 
 
-const loadSeatsFromLocalStorage = () => {
-  const savedSeats = localStorage.getItem(`selectedSeats_${concertId}`);
-  return savedSeats ? JSON.parse(savedSeats) : [];
-};
-
-const loadCountdown = () => {
-  const savedTime = localStorage.getItem(`seatSelectionStartTime_${concertId}`);
-  return savedTime ? parseInt(savedTime, 10) : null;
-};
-
-const initialSeats = Array(6)
-  .fill(null)
-  .map((_, rowIndex) =>
-    Array(10)
-      .fill(0)
-      .map((_) => ({
-        status: 0,
-        type: rowIndex < 2 ? "vip" : "regular",
-      }))
-  );
+const concerts = [
+    { id: 1, name: "Coldplay", description: "Dummy description", image: image1, date: "2025-06-15", ticketsAvailable: 0 },
+    { id: 2, name: "Summer Fest", description: "Dummy description", image: image2, date: "2025-07-21", ticketsAvailable: 10 },
+    { id: 3, name: "Winter Fest", description: "Dummy description", image: image3, date: "2025-08-10", ticketsAvailable: 55 },
+    { id: 4, name: "Winter Fest 2025", description: "Dummy description", image: image3, date: "2025-08-10", ticketsAvailable: 0 },
+    { id: 5, name: "Rock Night", description: "Dummy description", image: image1, date: "2025-09-12", ticketsAvailable: 0 },
+  ];
 
 const SeatSelection: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  
+  const concertId = id  
+  const concert = concerts.find(c => c.id === parseInt(concertId || ""));
+
+
+  const loadSeatsFromLocalStorage = () => {
+    const savedSeats = localStorage.getItem(`selectedSeats_${concertId}`);
+    return savedSeats ? JSON.parse(savedSeats) : [];
+  };
+
+  const loadCountdown = () => {
+    const savedTime = localStorage.getItem(`seatSelectionStartTime_${concertId}`);
+    return savedTime ? parseInt(savedTime, 10) : null;
+  };
+
+  const initialSeats = Array(6)
+    .fill(null)
+    .map((_, rowIndex) =>
+      Array(10)
+        .fill(0)
+        .map((_) => ({
+          status: 0,
+          type: rowIndex < 2 ? "vip" : "regular",
+        }))
+    );
+
   const [seats, setSeats] = useState(initialSeats);
   const [selectedSeats, setSelectedSeats] = useState<{ row: number; col: number; type: keyof typeof SEAT_PRICES }[]>(
     loadSeatsFromLocalStorage()
@@ -53,7 +70,7 @@ const SeatSelection: React.FC = () => {
     }
 
     setStartTime(savedTime);
-  }, []);
+  }, [concertId]);
 
   useEffect(() => {
     if (!startTime) return;
@@ -67,17 +84,17 @@ const SeatSelection: React.FC = () => {
         setSelectedSeats([]); 
         localStorage.removeItem(`selectedSeats_${concertId}`);
         localStorage.removeItem(`seatSelectionStartTime_${concertId}`);
-        alert("Waktu habis! Kursi yang Anda pilih telah dibatalkan.");
+        alert("Time's up! Your selected seats have been cancelled.");
         window.location.reload(); 
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [startTime]);
+  }, [startTime, concertId]);
 
   useEffect(() => {
     localStorage.setItem(`selectedSeats_${concertId}`, JSON.stringify(selectedSeats));
-  }, [selectedSeats]);
+  }, [selectedSeats, concertId]);
 
   const toggleSeatSelection = (row: number, col: number) => {
     if (seats[row][col].status === 1) return;
@@ -101,7 +118,7 @@ const SeatSelection: React.FC = () => {
     localStorage.removeItem(`selectedSeats_${concertId}`);
     localStorage.removeItem(`seatSelectionStartTime_${concertId}`);
     setOpenModal(false);
-    alert("Kursi berhasil dipesan!");
+    alert("Seats booked successfully!");
   };
 
   const totalPrice = selectedSeats.reduce((sum, seat) => sum + SEAT_PRICES[seat.type as keyof typeof SEAT_PRICES], 0);
@@ -116,21 +133,28 @@ const SeatSelection: React.FC = () => {
     <Container maxWidth="md">
       <Box textAlign="center" my={4}>
         <Typography variant="h4" fontWeight="bold">
-          Pilih Kursi Anda
+          Select Your Seats
         </Typography>
       </Box>
+
+      {concert && (
+        <Box display="flex" flexDirection="column" alignItems="center" textAlign="center" my={4}>
+          <Typography variant="h4" fontWeight="bold">{concert.name}</Typography>
+          <Typography variant="h6">{concert.date}</Typography>
+          <Typography>{concert.description}</Typography>
+          <img src={concert.image} alt={concert.name} style={{ width: "100%", maxHeight: "300px", objectFit: "cover" }} />
+        </Box>
+      )}
 
       <Box textAlign="center" mb={2}>
         <Typography variant="h6" color={countdown < 60 ? "red" : "black"}>
-          Waktu tersisa: {formatCountdown(countdown)}
+          Time remaining: {formatCountdown(countdown)}
         </Typography>
       </Box>
-
 
       <Box textAlign="center" mb={2} p={2} bgcolor="black" color="white">
         <Typography variant="h6">Main Stage</Typography>
       </Box>
-
 
       <Grid container spacing={1} justifyContent="center">
         {seats.map((row, rowIndex) =>
@@ -149,10 +173,10 @@ const SeatSelection: React.FC = () => {
                 : STATUS.available;
 
             const seatLabel = seat.status === 1 ? "Booked" : isSelected ? "Held" : "Available";
-            const seatTypeLabel = seat.type === "vip" ? "VIP" : "Reguler";
+            const seatTypeLabel = seat.type === "vip" ? "VIP" : "Regular";
 
             return (
-              <Grid  key={`${rowIndex}-${colIndex}`}>
+              <Grid key={`${rowIndex}-${colIndex}`}>
                 <Tooltip title={`${seatTypeLabel} - ${seatLabel}`} arrow>
                   <Button
                     variant="contained"
@@ -182,7 +206,7 @@ const SeatSelection: React.FC = () => {
           onClick={() => setOpenModal(true)}
           disabled={selectedSeats.length === 0}
         >
-          Konfirmasi Pilihan
+          Confirm Selection
         </Button>
       </Box>
 
@@ -198,23 +222,23 @@ const SeatSelection: React.FC = () => {
           }}
         >
           <Typography variant="h6" fontWeight="bold">
-            Kursi yang Dipilih:
+            Selected Seats:
           </Typography>
           <ul>
             {selectedSeats.map((seat, index) => (
               <li key={index}>
-                Baris {seat.row + 1}, Kursi {seat.col + 1} -{" "}
-                {seat.type === "vip" ? "VIP" : "Reguler"} ({SEAT_PRICES[seat.type].toLocaleString()}{" "}
+                Row {seat.row + 1}, Seat {seat.col + 1} -{" "}
+                {seat.type === "vip" ? "VIP" : "Regular"} ({SEAT_PRICES[seat.type].toLocaleString()}{" "}
                 IDR)
               </li>
             ))}
           </ul>
           <Typography variant="h6" mt={2}>
-            Total Harga: <strong>{totalPrice.toLocaleString()} IDR</strong>
+            Total Price: <strong>{totalPrice.toLocaleString()} IDR</strong>
           </Typography>
           <Box textAlign="center" mt={2}>
             <Button variant="contained" color="primary" onClick={confirmSelection}>
-              Konfirmasi & Pesan
+              Confirm & Book
             </Button>
           </Box>
         </Paper>

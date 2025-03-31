@@ -36,13 +36,13 @@ const ConcertCard: React.FC<ConcertProps> = ({
       const timeLeft = concertDate - now;
 
       if (timeLeft < 0) {
-        setCountdown("Konser telah dimulai!");
+        setCountdown("Consert Already started");
         clearInterval(interval);
         return;
       }
 
       const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-      setCountdown(`${days} hari lagi`);
+      setCountdown(`${days} days left`);
     }, 1000);
 
     return () => clearInterval(interval);
@@ -74,7 +74,7 @@ const ConcertCard: React.FC<ConcertProps> = ({
           <div className="mt-4">
             <p className="text-sm text-gray-500">{countdown}</p>
             <p className={`text-lg font-semibold ${ticketsAvailable > 0 ? "text-green-500" : "text-red-500"}`}>
-              {ticketsAvailable > 0 ? `Tiket tersedia: ${ticketsAvailable}` : "Tiket Habis!"}
+              {ticketsAvailable > 0 ? `Available : ${ticketsAvailable}` : "Sold Out!"}
             </p>
           </div>
         </div>
@@ -102,7 +102,7 @@ const ConcertCard: React.FC<ConcertProps> = ({
         >
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
             <Typography id="sold-out-modal" variant="h6" component="h2" fontWeight="bold">
-              Tiket Habis
+              Sold Out
             </Typography>
             <IconButton onClick={handleCloseModal} size="small">
               <CloseIcon />
@@ -110,7 +110,7 @@ const ConcertCard: React.FC<ConcertProps> = ({
           </Box>
           
           <Typography id="sold-out-ticket-information" sx={{ mt: 2, mb: 3 }}>
-            Mohon maaf, semua tiket untuk konser <strong>{name}</strong> telah habis terjual. 
+            Ticket <strong>{name}</strong> is sold out. Please check back later for availability. 
           </Typography>
 
         </Box>

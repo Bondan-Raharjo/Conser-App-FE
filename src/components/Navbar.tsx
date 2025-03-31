@@ -48,7 +48,7 @@ const Navbar: React.FC = () => {
           }}
           onClick={handleDrawerToggle}
         >
-          <ListItemText primary="Daftar Konser" />
+          <ListItemText primary="Concert List" />
         </ListItem>
         <ListItem
           component={NavLink}
@@ -63,7 +63,7 @@ const Navbar: React.FC = () => {
           }}
           onClick={handleDrawerToggle}
         >
-          <ListItemText primary="Tiket Saya" />
+          <ListItemText primary="My Tickets" />
         </ListItem>
       </List>
       <Divider sx={{ backgroundColor: "rgba(255, 255, 255, 0.2)" }} />

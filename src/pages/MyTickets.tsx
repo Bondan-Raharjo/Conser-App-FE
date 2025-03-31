@@ -18,10 +18,10 @@ const TicketCard: React.FC<{ ticket: Ticket }> = ({ ticket }) => (
         {ticket.concertName}
       </Typography>
       <Typography variant="body2" color="textSecondary" className="mb-1">
-        Tanggal: {ticket.date}
+        Date: {ticket.date}
       </Typography>
       <Typography variant="body2" className="mb-1">
-        Jumlah Tiket: {ticket.quantity}
+        Ticket Quantity: {ticket.quantity}
       </Typography>
       <Typography
         variant="body2"
@@ -39,14 +39,14 @@ const MyTickets: React.FC = () => {
   const hasTickets = myTickets.length > 0;
 
   return (
-    <Box className="p-4 sm:p-8  min-h-screen">
+    <Box className="p-4 sm:p-8 min-h-screen">
       <Typography variant="h4" className="text-center mb-6 font-bold">
-        Tiket Saya
+        My Tickets
       </Typography>
       
       {!hasTickets ? (
         <Typography className="text-center text-gray-500">
-          Anda belum memiliki tiket. Silakan pesan tiket terlebih dahulu.
+          You don't have any tickets yet. Please book a ticket first.
         </Typography>
       ) : (
         <Grid container spacing={3} justifyContent="center">

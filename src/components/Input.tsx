@@ -6,18 +6,20 @@ interface InputProps {
   placeholder: string;
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  required?: boolean;
 }
 
-const Input: React.FC<InputProps> = ({ type, placeholder, value, onChange }) => {
+const Input: React.FC<InputProps> = ({ type, placeholder, value, onChange, required = false }) => {
   return (
     <TextField
       type={type}
-      label={placeholder} 
+      label={placeholder}
       value={value}
       onChange={onChange}
       variant="outlined"
       fullWidth
       margin="normal"
+      required={required}
     />
   );
 };

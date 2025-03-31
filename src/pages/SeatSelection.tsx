@@ -139,13 +139,13 @@ const SeatSelection: React.FC = () => {
     <Container maxWidth="md">
       <Box textAlign="center" my={4}>
         <Typography variant="h4" fontWeight="bold">
-          Select Your Seats
+          Select Your Seats : {concert ? concert.name : "Concert not found"}
         </Typography>
       </Box>
 
       {concert && (
         <Box display="flex" flexDirection="column" alignItems="center" textAlign="center" my={4}>
-          <Typography variant="h4" fontWeight="bold">{concert.name}</Typography>
+          <Typography variant="h4" fontWeight="bold"></Typography>
           <Typography variant="h6">{concert.date}</Typography>
           <Typography>{concert.description}</Typography>
           <img src={concert.image} alt={concert.name} style={{ width: "100%", maxHeight: "300px", objectFit: "cover" }} />

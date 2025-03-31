@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Modal, 
-  Box, 
-  Typography, 
-  IconButton
-} from "@mui/material";
-import CloseIcon from '@mui/icons-material/Close';
+import { Modal, Box, Typography, IconButton, Button } from "@mui/material";
+import { Ticket, Calendar, AlertCircle, Clock } from "lucide-react";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface ConcertProps {
   id: number;
@@ -17,34 +13,29 @@ interface ConcertProps {
   ticketsAvailable: number;
 }
 
-const ConcertCard: React.FC<ConcertProps> = ({ 
-  id, 
-  name, 
-  description, 
-  image, 
-  date, 
-  ticketsAvailable 
-}) => {
+const ConcertCard: React.FC<ConcertProps> = ({ id, name, description, image, date, ticketsAvailable }) => {
   const [countdown, setCountdown] = useState<string>("");
   const [openModal, setOpenModal] = useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const updateCountdown = () => {
       const concertDate = new Date(date).getTime();
       const now = new Date().getTime();
       const timeLeft = concertDate - now;
 
       if (timeLeft < 0) {
-        setCountdown("Consert Already started");
-        clearInterval(interval);
+        setCountdown("Concert Already Started");
         return;
       }
 
       const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-      setCountdown(`${days} days left`);
-    }, 1000);
+      const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      setCountdown(`${days} days, ${hours} hours left`);
+    };
 
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 3600000);
     return () => clearInterval(interval);
   }, [date]);
 
@@ -53,66 +44,71 @@ const ConcertCard: React.FC<ConcertProps> = ({
       setOpenModal(true);
       return;
     }
-    // Navigate to the seat selection page
     navigate(`/concerts/${id}/seats`);
-  };
-
-  const handleCloseModal = () => {
-    setOpenModal(false);
   };
 
   return (
     <>
       <div
-        onClick={handleSelectConcert}
-        className="bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 cursor-pointer transform hover:scale-105"
+        className="bg-white shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-all duration-300  transform hover:scale-105"
       >
-        <img src={image} alt={name} className="w-full h-40 object-cover" />
+        <img src={image} alt={name} className="w-full h-48 object-cover" />
         <div className="p-4">
-          <h2 className="text-xl font-bold">{name}</h2>
-          <p className="text-gray-600">{description}</p>
-          <div className="mt-4">
-            <p className="text-sm text-gray-500">{countdown}</p>
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <Ticket className="w-5 h-5 text-blue-500" /> {name}
+            </h2>
+            <span className="flex items-center gap-1 text-gray-500 text-sm">
+              <Calendar className="w-4 h-4" /> {new Date(date).toLocaleDateString()}
+            </span>
+          </div>
+          <p className="text-gray-600 mt-2 text-sm">{description}</p>
+          <div className="mt-4 flex items-center justify-between">
+            <p className="text-sm text-gray-500 flex items-center gap-1">
+              <Clock className="w-4 h-4 text-gray-400" /> {countdown}
+            </p>
             <p className={`text-lg font-semibold ${ticketsAvailable > 0 ? "text-green-500" : "text-red-500"}`}>
-              {ticketsAvailable > 0 ? `Available : ${ticketsAvailable}` : "Sold Out!"}
+              {ticketsAvailable > 0 ? `Available: ${ticketsAvailable}` : ""}
             </p>
           </div>
+          <Button
+            onClick={handleSelectConcert}
+            variant="contained"
+            fullWidth
+            sx={{ mt: 2, bgcolor: ticketsAvailable > 0 ? "#1976D2" : "gray" }}
+            disabled={ticketsAvailable <= 0}
+          >
+            {ticketsAvailable > 0 ? "Buy Ticket" : "Sold Out"}
+          </Button>
         </div>
       </div>
 
-      {/* Alert Modal */}
-      <Modal
-        open={openModal}
-        onClose={handleCloseModal}
-        aria-labelledby="sold-out-modal"
-        aria-describedby="sold-out-ticket-information"
-      >
+      {/* Modal for Sold Out Tickets */}
+      <Modal open={openModal} onClose={() => setOpenModal(false)}>
         <Box
           sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
             width: 400,
-            bgcolor: 'background.paper',
+            bgcolor: "background.paper",
             borderRadius: 2,
             boxShadow: 24,
             p: 4,
           }}
         >
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-            <Typography id="sold-out-modal" variant="h6" component="h2" fontWeight="bold">
-              Sold Out
+            <Typography variant="h6" fontWeight="bold" className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-red-500" /> Sold Out
             </Typography>
-            <IconButton onClick={handleCloseModal} size="small">
+            <IconButton onClick={() => setOpenModal(false)} size="small">
               <CloseIcon />
             </IconButton>
           </Box>
-          
-          <Typography id="sold-out-ticket-information" sx={{ mt: 2, mb: 3 }}>
-            Ticket <strong>{name}</strong> is sold out. Please check back later for availability. 
+          <Typography>
+            Tickets for <strong>{name}</strong> are sold out. Please check back later for availability.
           </Typography>
-
         </Box>
       </Modal>
     </>

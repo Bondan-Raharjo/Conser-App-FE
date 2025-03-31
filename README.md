@@ -10,6 +10,10 @@ A React application that allows users to select and book concert seats. The app 
 - **Local Storage**: Stores seat selection and countdown state to persist across page reloads.
 - **Booking Confirmation**: Confirms seat booking and updates seat status.
 
+## Live Demo
+
+[View Live Demo](https://conser-app-fe.vercel.app)
+
 ## Installation
 
 ```sh
@@ -37,3 +41,4 @@ npm run dev
 
 ## License
 MIT
+

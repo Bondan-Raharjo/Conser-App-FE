@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Typography, Grid, Button, Box, Tooltip, Modal, Paper } from "@mui/material";
+import { Container, Typography, Grid, Button, Box, Tooltip, Modal, Paper,TextField } from "@mui/material";
 import { useParams } from "react-router-dom";
 import image1 from "../assets/images/image1.png";
 import image2 from "../assets/images/image2.png";
@@ -60,6 +60,8 @@ const SeatSelection: React.FC = () => {
   const [openModal, setOpenModal] = useState(false);
   const [countdown, setCountdown] = useState(600); 
   const [startTime, setStartTime] = useState<number | null>(null);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
 
   useEffect(() => {
     let savedTime = loadCountdown();
@@ -111,6 +113,10 @@ const SeatSelection: React.FC = () => {
   };
 
   const confirmSelection = () => {
+    if (name.trim() === "" || phone.trim() === "") {
+      alert("Please fill in all fields.");
+      return;
+    }
     const updatedSeats = [...seats];
     selectedSeats.forEach(({ row, col }) => (updatedSeats[row][col].status = 1));
     setSeats(updatedSeats);
@@ -222,7 +228,24 @@ const SeatSelection: React.FC = () => {
           }}
         >
           <Typography variant="h6" fontWeight="bold">
-            Selected Seats:
+          Details Customer :
+          </Typography>
+          <TextField
+            label="Name"
+            fullWidth
+            margin="normal"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <TextField
+            label="Phone Number"
+            fullWidth
+            margin="normal"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+          />
+            <Typography variant="h6" fontWeight="bold">
+            Selected Seats :
           </Typography>
           <ul>
             {selectedSeats.map((seat, index) => (
@@ -233,6 +256,7 @@ const SeatSelection: React.FC = () => {
               </li>
             ))}
           </ul>
+    
           <Typography variant="h6" mt={2}>
             Total Price: <strong>{totalPrice.toLocaleString()} IDR</strong>
           </Typography>

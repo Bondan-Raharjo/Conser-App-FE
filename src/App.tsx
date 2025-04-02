@@ -11,8 +11,8 @@ const SeatSelection = lazy(() => import("./pages/SeatSelection"));
 const NotFound = () => (
   <Box textAlign="center" py={8}>
     <h1 style={{ fontSize: '4rem', marginBottom: '1rem' }}>404</h1>
-    <h2>Halaman Tidak Ditemukan</h2>
-    <p>Maaf, halaman yang Anda cari tidak ditemukan.</p>
+    <h2>Page Not Found</h2>
+    <p>Sorry, the page you are looking for could not be found.</p>
   </Box>
 );
 
@@ -21,8 +21,10 @@ const isAuthenticated = () => {
 };
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const location = useLocation();
+  
   if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={`/login?lastPage=${encodeURIComponent(location.pathname)}`} replace />;
   }
   return children;
 };
@@ -38,7 +40,6 @@ const LoadingFallback = () => (
   </Box>
 );
 
-// Layout component with conditional navbar
 const AppLayout = () => {
   const location = useLocation();
   const isLoginPage = location.pathname === "/login";
@@ -80,7 +81,6 @@ const AppLayout = () => {
               }
             />
             
-            {/* 404 route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

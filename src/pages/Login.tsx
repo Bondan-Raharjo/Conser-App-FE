@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Input from "../components/Input";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -9,6 +9,10 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const lastPage = searchParams.get("lastPage") || "/concerts";
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -37,7 +41,7 @@ const Login: React.FC = () => {
       );
     
     localStorage.setItem("token", uuid);
-    navigate("/concerts");
+    navigate(lastPage, { replace: true }); 
   };
 
   return (

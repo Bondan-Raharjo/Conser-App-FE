@@ -207,6 +207,7 @@ const SeatSelection: React.FC = () => {
 
   const handleDragOver = (row: number, col: number, section: string, type: keyof typeof SEAT_PRICES, e: React.DragEvent) => {
     e.preventDefault();
+    console.log("Drag Over", row, col, section,type);
     
     const seats = section === "vip" ? vipSeats : regularSeats;
     

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Typography, Grid, Button, Box, Tooltip, Modal, Paper,TextField } from "@mui/material";
+import { Container, Typography, Grid, Button, Box, Tooltip, Modal, Paper, TextField, Divider } from "@mui/material";
 import { useParams } from "react-router-dom";
 import image1 from "../assets/images/image1.png";
 import image2 from "../assets/images/image2.png";
@@ -16,21 +16,19 @@ const STATUS = {
   booked: "gray",
 };
 
-
 const concerts = [
-    { id: 1, name: "Coldplay", description: "Dummy description", image: image1, date: "2025-06-15", ticketsAvailable: 0 },
-    { id: 2, name: "Summer Fest", description: "Dummy description", image: image2, date: "2025-07-21", ticketsAvailable: 10 },
-    { id: 3, name: "Winter Fest", description: "Dummy description", image: image3, date: "2025-08-10", ticketsAvailable: 55 },
-    { id: 4, name: "Winter Fest 2025", description: "Dummy description", image: image3, date: "2025-08-10", ticketsAvailable: 0 },
-    { id: 5, name: "Rock Night", description: "Dummy description", image: image1, date: "2025-09-12", ticketsAvailable: 0 },
-  ];
+  { id: 1, name: "Coldplay", description: "Dummy description", image: image1, date: "2025-06-15", ticketsAvailable: 0 },
+  { id: 2, name: "Summer Fest", description: "Dummy description", image: image2, date: "2025-07-21", ticketsAvailable: 10 },
+  { id: 3, name: "Winter Fest", description: "Dummy description", image: image3, date: "2025-08-10", ticketsAvailable: 55 },
+  { id: 4, name: "Winter Fest 2025", description: "Dummy description", image: image3, date: "2025-08-10", ticketsAvailable: 0 },
+  { id: 5, name: "Rock Night", description: "Dummy description", image: image1, date: "2025-09-12", ticketsAvailable: 0 },
+];
 
 const SeatSelection: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   
   const concertId = id  
   const concert = concerts.find(c => c.id === parseInt(concertId || ""));
-
 
   const loadSeatsFromLocalStorage = () => {
     const savedSeats = localStorage.getItem(`selectedSeats_${concertId}`);
@@ -42,19 +40,31 @@ const SeatSelection: React.FC = () => {
     return savedTime ? parseInt(savedTime, 10) : null;
   };
 
-  const initialSeats = Array(6)
+  const initialVipSeats = Array(2)
     .fill(null)
-    .map((_, rowIndex) =>
+    .map((_,) =>
       Array(10)
         .fill(0)
         .map((_) => ({
           status: 0,
-          type: rowIndex < 2 ? "vip" : "regular",
+          type: "vip",
         }))
     );
 
-  const [seats, setSeats] = useState(initialSeats);
-  const [selectedSeats, setSelectedSeats] = useState<{ row: number; col: number; type: keyof typeof SEAT_PRICES }[]>(
+  const initialRegularSeats = Array(4)
+    .fill(null)
+    .map((_,) =>
+      Array(10)
+        .fill(0)
+        .map((_) => ({
+          status: 0,
+          type: "regular",
+        }))
+    );
+
+  const [vipSeats, setVipSeats] = useState(initialVipSeats);
+  const [regularSeats, setRegularSeats] = useState(initialRegularSeats);
+  const [selectedSeats, setSelectedSeats] = useState<{ row: number; col: number; type: keyof typeof SEAT_PRICES; section: string }[]>(
     loadSeatsFromLocalStorage()
   );
   const [openModal, setOpenModal] = useState(false);
@@ -98,17 +108,21 @@ const SeatSelection: React.FC = () => {
     localStorage.setItem(`selectedSeats_${concertId}`, JSON.stringify(selectedSeats));
   }, [selectedSeats, concertId]);
 
-  const toggleSeatSelection = (row: number, col: number) => {
+  const toggleSeatSelection = (row: number, col: number, type: keyof typeof SEAT_PRICES, section: string) => {
+    const seats = section === "vip" ? vipSeats : regularSeats;
+    
     if (seats[row][col].status === 1) return;
 
     const isSelected = selectedSeats.some(
-      (seat) => seat.row === row && seat.col === col
+      (seat) => seat.row === row && seat.col === col && seat.section === section
     );
 
     if (isSelected) {
-      setSelectedSeats((prev) => prev.filter((seat) => seat.row !== row || seat.col !== col));
+      setSelectedSeats((prev) => prev.filter((seat) => 
+        !(seat.row === row && seat.col === col && seat.section === section)
+      ));
     } else {
-      setSelectedSeats((prev) => [...prev, { row, col, type: seats[row][col].type as "regular" | "vip" }]);
+      setSelectedSeats((prev) => [...prev, { row, col, type, section }]);
     }
   };
 
@@ -117,9 +131,23 @@ const SeatSelection: React.FC = () => {
       alert("Please fill in all fields.");
       return;
     }
-    const updatedSeats = [...seats];
-    selectedSeats.forEach(({ row, col }) => (updatedSeats[row][col].status = 1));
-    setSeats(updatedSeats);
+    
+    const updatedVipSeats = [...vipSeats];
+    selectedSeats.forEach(({ row, col, section }) => {
+      if (section === "vip") {
+        updatedVipSeats[row][col].status = 1;
+      }
+    });
+    setVipSeats(updatedVipSeats);
+    
+    const updatedRegularSeats = [...regularSeats];
+    selectedSeats.forEach(({ row, col, section }) => {
+      if (section === "regular") {
+        updatedRegularSeats[row][col].status = 1;
+      }
+    });
+    setRegularSeats(updatedRegularSeats);
+    
     setSelectedSeats([]);
     localStorage.removeItem(`selectedSeats_${concertId}`);
     localStorage.removeItem(`seatSelectionStartTime_${concertId}`);
@@ -127,7 +155,7 @@ const SeatSelection: React.FC = () => {
     alert("Seats booked successfully!");
   };
 
-  const totalPrice = selectedSeats.reduce((sum, seat) => sum + SEAT_PRICES[seat.type as keyof typeof SEAT_PRICES], 0);
+  const totalPrice = selectedSeats.reduce((sum, seat) => sum + SEAT_PRICES[seat.type], 0);
 
   const formatCountdown = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -135,17 +163,73 @@ const SeatSelection: React.FC = () => {
     return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
+  const renderSeatGrid = (seats: any[][], section: string) => {
+    return (
+      <Grid container spacing={1} justifyContent="center">
+        {seats.map((row, rowIndex) =>
+          row.map((seat, colIndex) => {
+            const isSelected = selectedSeats.some(
+              (selectedSeat) => 
+                selectedSeat.row === rowIndex && 
+                selectedSeat.col === colIndex && 
+                selectedSeat.section === section
+            );
+
+            const seatColor =
+              seat.status === 1
+                ? STATUS.booked
+                : isSelected
+                ? STATUS.held
+                : seat.type === "vip"
+                ? "blue"
+                : STATUS.available;
+
+            const seatLabel = seat.status === 1 ? "Booked" : isSelected ? "Held" : "Available";
+            const seatTypeLabel = seat.type === "vip" ? "VIP" : "Regular";
+            
+            let seatNumber;
+            if (section === "vip") {
+              seatNumber = colIndex + 1 + (rowIndex * 10);
+            } else {
+              seatNumber = colIndex + 1 + (rowIndex * 10) + 20; 
+            }
+
+            return (
+              <Grid  key={`${section}-${rowIndex}-${colIndex}`}>
+                <Tooltip title={`${seatTypeLabel} - ${seatLabel}`} arrow>
+                  <Button
+                    variant="contained"
+                    onClick={() => toggleSeatSelection(rowIndex, colIndex, seat.type, section)}
+                    style={{
+                      width: 40,
+                      height: 40,
+                      backgroundColor: seatColor,
+                      cursor: seat.status === 1 ? "not-allowed" : "pointer",
+                      border: seat.type === "vip" ? "2px solid gold" : "2px solid transparent",
+                    }}
+                    disabled={seat.status === 1}
+                  >
+                    {seatNumber}
+                  </Button>
+                </Tooltip>
+              </Grid>
+            );
+          })
+        )}
+      </Grid>
+    );
+  };
+
   return (
     <Container maxWidth="md">
       <Box textAlign="center" my={4}>
         <Typography variant="h4" fontWeight="bold">
-          Select Your Seats : {concert ? concert.name : "Concert not found"}
+          Select Your Seats: {concert ? concert.name : "Concert not found"}
         </Typography>
       </Box>
 
       {concert && (
         <Box display="flex" flexDirection="column" alignItems="center" textAlign="center" my={4}>
-          <Typography variant="h4" fontWeight="bold"></Typography>
           <Typography variant="h6">{concert.date}</Typography>
           <Typography>{concert.description}</Typography>
           <img src={concert.image} alt={concert.name} style={{ width: "100%", maxHeight: "300px", objectFit: "cover" }} />
@@ -162,48 +246,27 @@ const SeatSelection: React.FC = () => {
         <Typography variant="h6">Main Stage</Typography>
       </Box>
 
-      <Grid container spacing={1} justifyContent="center">
-        {seats.map((row, rowIndex) =>
-          row.map((seat, colIndex) => {
-            const isSelected = selectedSeats.some(
-              (selectedSeat) => selectedSeat.row === rowIndex && selectedSeat.col === colIndex
-            );
+      {/* VIP Section */}
+      <Box mb={4}>
+        <Box sx={{ bgcolor: "gold", p: 1, mb: 2 }}>
+          <Typography variant="h6" fontWeight="bold" textAlign="center">
+            VIP Section - Rp {SEAT_PRICES.vip.toLocaleString()} per seat
+          </Typography>
+        </Box>
+        {renderSeatGrid(vipSeats, "vip")}
+      </Box>
 
-            const seatColor =
-              seat.status === 1
-                ? STATUS.booked
-                : isSelected
-                ? STATUS.held
-                : seat.type === "vip"
-                ? "blue"
-                : STATUS.available;
+      <Divider sx={{ my: 4 }} />
 
-            const seatLabel = seat.status === 1 ? "Booked" : isSelected ? "Held" : "Available";
-            const seatTypeLabel = seat.type === "vip" ? "VIP" : "Regular";
-
-            return (
-              <Grid key={`${rowIndex}-${colIndex}`}>
-                <Tooltip title={`${seatTypeLabel} - ${seatLabel}`} arrow>
-                  <Button
-                    variant="contained"
-                    onClick={() => toggleSeatSelection(rowIndex, colIndex)}
-                    style={{
-                      width: 40,
-                      height: 40,
-                      backgroundColor: seatColor,
-                      cursor: seat.status === 1 ? "not-allowed" : "pointer",
-                      border: seat.type === "vip" ? "2px solid gold" : "2px solid transparent",
-                    }}
-                    disabled={seat.status === 1}
-                  >
-                    {colIndex + 1}
-                  </Button>
-                </Tooltip>
-              </Grid>
-            );
-          })
-        )}
-      </Grid>
+      {/* Regular Section */}
+      <Box mb={4}>
+        <Box sx={{ bgcolor: "lightgreen", p: 1, mb: 2 }}>
+          <Typography variant="h6" fontWeight="bold" textAlign="center">
+            Regular Section - Rp {SEAT_PRICES.regular.toLocaleString()} per seat
+          </Typography>
+        </Box>
+        {renderSeatGrid(regularSeats, "regular")}
+      </Box>
 
       <Box textAlign="center" mt={4}>
         <Button
@@ -228,7 +291,7 @@ const SeatSelection: React.FC = () => {
           }}
         >
           <Typography variant="h6" fontWeight="bold">
-          Details Customer :
+            Customer Details:
           </Typography>
           <TextField
             label="Name"
@@ -244,17 +307,22 @@ const SeatSelection: React.FC = () => {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
-            <Typography variant="h6" fontWeight="bold">
-            Selected Seats :
+          <Typography variant="h6" fontWeight="bold">
+            Selected Seats:
           </Typography>
           <ul>
-            {selectedSeats.map((seat, index) => (
-              <li key={index}>
-                Row {seat.row + 1}, Seat {seat.col + 1} -{" "}
-                {seat.type === "vip" ? "VIP" : "Regular"} ({SEAT_PRICES[seat.type].toLocaleString()}{" "}
-                IDR)
-              </li>
-            ))}
+            {selectedSeats.map((seat, index) => {
+              const seatNumber = seat.section === "vip" 
+                ? seat.col + 1 + (seat.row * 10)
+                : seat.col + 1 + (seat.row * 10) + 20;
+                
+              return (
+                <li key={index}>
+                  {seat.section === "vip" ? "VIP" : "Regular"} Row {seat.row + 1}, 
+                  Seat {seat.col + 1} (#{seatNumber}) - {SEAT_PRICES[seat.type].toLocaleString()} IDR
+                </li>
+              );
+            })}
           </ul>
     
           <Typography variant="h6" mt={2}>

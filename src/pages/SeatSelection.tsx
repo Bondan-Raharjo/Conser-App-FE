@@ -29,6 +29,7 @@ const SeatSelection: React.FC = () => {
   
   const concertId = id  
   const concert = concerts.find(c => c.id === parseInt(concertId || ""));
+  const ticketsAvailable = concert?.ticketsAvailable || 0;
 
   const loadSeatsFromLocalStorage = () => {
     const savedSeats = localStorage.getItem(`selectedSeats_${concertId}`);
@@ -40,28 +41,40 @@ const SeatSelection: React.FC = () => {
     return savedTime ? parseInt(savedTime, 10) : null;
   };
 
-  // Create VIP and regular seats separately
-  const initialVipSeats = Array(2)
-    .fill(null)
-    .map((_,) =>
-      Array(10)
-        .fill(0)
-        .map((_) => ({
-          status: 0,
+  const generateInitialSeats = () => {
+    const totalVipSeats = 2 * 10; 
+    const totalRegularSeats = 4 * 10; 
+    const totalSeats = totalVipSeats + totalRegularSeats;
+    
+    const allSeatIndices = Array(totalSeats).fill(0).map((_, i) => i);
+    
+    const shuffledIndices = [...allSeatIndices].sort(() => Math.random() - 0.5);
+    
+    const bookedIndices = new Set(shuffledIndices.slice(0, ticketsAvailable));
+    const vipSeats = Array(2).fill(null).map((_, row) =>
+      Array(10).fill(0).map((_, col) => {
+        const index = row * 10 + col;
+        return {
+          status: bookedIndices.has(index) ? 0 : 1,
           type: "vip" as const,
-        }))
+        };
+      })
     );
-
-  const initialRegularSeats = Array(4)
-    .fill(null)
-    .map((_,) =>
-      Array(10)
-        .fill(0)
-        .map((_) => ({
-          status: 0,
+    
+    const regularSeats = Array(4).fill(null).map((_, row) =>
+      Array(10).fill(0).map((_, col) => {
+        const index = totalVipSeats + (row * 10 + col);
+        return {
+          status: bookedIndices.has(index) ? 0 : 1,
           type: "regular" as const,
-        }))
+        };
+      })
     );
+    
+    return { vipSeats, regularSeats };
+  };
+
+  const { vipSeats: initialVipSeats, regularSeats: initialRegularSeats } = generateInitialSeats();
 
   const [vipSeats, setVipSeats] = useState(initialVipSeats);
   const [regularSeats, setRegularSeats] = useState(initialRegularSeats);
